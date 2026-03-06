@@ -1,5 +1,10 @@
-TOKEN = "8736121810:AAHH37Wv_nahG3iRY0Pehf58JVNzh9Ncg5c"
+import os
 
+# Get token from environment variable
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+
+if not TOKEN:
+    raise ValueError("No TELEGRAM_BOT_TOKEN environment variable set!")
 SHIFT_TYPES = {
     "shift 07:30": {"start": "07:30", "end": "16:00"},
     "shift 09:30": {"start": "09:30", "end": "18:00"},
