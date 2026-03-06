@@ -8,6 +8,15 @@ from shifts import *
 from calculations import calculate_hours
 from config import SHIFT_TYPES
 
+import pytz
+
+# Set your timezone (change to your location)
+LOCAL_TZ = pytz.timezone('Europe/London')  # Change to your timezone
+
+def get_local_now():
+    """Get current time in local timezone"""
+    return datetime.now(pytz.UTC).astimezone(LOCAL_TZ)
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Work hours bot ready.")
@@ -56,7 +65,7 @@ async def handle_shift_selection(update: Update, context: ContextTypes.DEFAULT_T
         await query.edit_message_text("⚠️ You are already clocked in.")
         return
 
-    now = datetime.now()
+    now =  get_local_now()
     insert_shift(now.date().isoformat(), shift, now.isoformat())
 
     await query.edit_message_text(
@@ -71,7 +80,7 @@ async def clock_out(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ No active shift.")
         return
 
-    now = datetime.now()
+    now = get_local_now()
     update_clock_out(now.isoformat())
 
     hours = calculate_hours(
@@ -90,7 +99,7 @@ async def break_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ Break already started.")
         return
 
-    now = datetime.now()
+    now = get_local_now()
     update_break_start(now.isoformat())
 
     await update.message.reply_text("Break started")
@@ -103,14 +112,14 @@ async def break_end(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ Break not started.")
         return
 
-    now = datetime.now()
+    now = get_local_now()
     update_break_end(now.isoformat())
 
     await update.message.reply_text("Break ended")
 
 
 async def today(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    today = datetime.now().date().isoformat()
+    today = get_local_now().date().isoformat()
 
     cursor.execute("""
     SELECT * FROM shifts
@@ -139,7 +148,7 @@ async def today(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def week(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    week_ago = (datetime.now() - timedelta(days=7)).date()
+    week_ago = (get_local_now() - timedelta(days=7)).date()
 
     df = pd.read_sql("SELECT * FROM shifts", conn)
 
@@ -172,7 +181,7 @@ async def week(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def month(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    month_ago = (datetime.now() - timedelta(days=30)).date()
+    month_ago = (get_local_now()- timedelta(days=30)).date()
 
     df = pd.read_sql("SELECT * FROM shifts", conn)
 
